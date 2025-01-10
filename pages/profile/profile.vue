@@ -281,6 +281,10 @@
   import { ref } from 'vue'
   import { Camera, ChevronDown, Github, Linkedin, Trash2 } from 'lucide-vue-next'
   
+  definePageMeta({
+    layout: 'common'
+  })
+
   const activeSection = ref(null)
   const profile = ref({
     imageUrl: null,

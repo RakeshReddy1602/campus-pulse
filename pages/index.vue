@@ -48,7 +48,7 @@
 
   <template>
      <div>
-      <Hero />
+      <Hero/>
       <About :features="features" />
       <Features :cards="cards" />
       <Testimonials :testimonials="testimonials" />

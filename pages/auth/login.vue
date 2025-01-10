@@ -54,10 +54,10 @@
                   @click="showPassword = !showPassword"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <Icon
+                  <!-- <Icon
                     :name="showPassword ? 'ph:eye-slash' : 'ph:eye'"
                     class="w-5 h-5"
-                  />
+                  /> -->
                 </button>
               </div>
               <p v-if="errors.password" class="mt-1 text-sm text-red-600">
@@ -128,13 +128,7 @@
     
     try {
       isLoading.value = true;
-      // Add your login logic here
-      // Example:
-      // await $fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   body: formData.value
-      // });
-      // navigateTo('/dashboard');
+      navigateTo('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
     } finally {
