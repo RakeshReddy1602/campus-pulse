@@ -128,6 +128,21 @@
     
     try {
       isLoading.value = true;
+      const res = await $fetch('/api/user/login', {
+      method: 'POST',
+      body: {
+        username: 'admin',
+        password: 'admin'
+      }
+    });
+
+    if (res.status === 'success') {
+      // responseMessage.value = 'Login successful!';
+      navigateTo('/dashboard');
+      // Handle successful login (e.g., store user data or redirect)
+    } else {
+     alert('Login failed');
+    }
       navigateTo('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);

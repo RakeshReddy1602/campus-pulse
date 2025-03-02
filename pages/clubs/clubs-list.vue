@@ -40,7 +40,7 @@
               <span
                 class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-indigo-200 text-indigo-800"
               >
-                {{ club.category }}
+                {{ club?.club_category?.name }}
               </span>
               <button
                 class="px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-teal-500 hover:to-blue-500"
@@ -65,49 +65,16 @@
     title: "Discover New Clubs",
     description: "Explore and connect with communities you're passionate about.",
   });
+
+
   
-  const availableClubs = ref([
-    {
-      id: 1,
-      name: "Art Explorers",
-      category: "Art",
-      description: "A creative space for art lovers to explore and showcase talents.",
-      image: "https://source.unsplash.com/400x300/?art,paint",
-      icon: PuzzlePieceIcon,
-    },
-    {
-      id: 2,
-      name: "Adventure Seekers",
-      category: "Travel",
-      description: "Plan adventures, trips, and explorations with like-minded people.",
-      image: "https://source.unsplash.com/400x300/?adventure,hiking",
-      icon: GlobeAltIcon,
-    },
-    {
-      id: 3,
-      name: "Gaming Squad",
-      category: "Gaming",
-      description: "Join the fun with online and offline gaming events.",
-      image: "https://source.unsplash.com/400x300/?gaming,controller",
-      icon: AcademicCapIcon,
-    },
-    {
-      id: 4,
-      name: "Music Masters",
-      category: "Music",
-      description: "Share your love for music and collaborate with fellow musicians.",
-      image: "https://source.unsplash.com/400x300/?music,instrument",
-      icon: MusicalNoteIcon,
-    },
-    {
-      id: 5,
-      name: "Eco Warriors",
-      category: "Environment",
-      description: "Take part in activities to protect and nurture our environment.",
-      image: "https://source.unsplash.com/400x300/?environment,nature",
-      icon: FingerPrintIcon,
-    },
-  ]);
+  let availableClubs = ref([]);
+
+  const res = await $fetch('/api/clubs/fetch-all-clubs', {
+      method: 'GET'
+    });
+  availableClubs = res.data;
+
   
   const joinClub = (clubId) => {
     alert(`You have joined the club with ID: ${clubId}!`);
