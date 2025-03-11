@@ -3,7 +3,7 @@
   <main class="min-h-screen bg-gradient-to-br from-light-gray via-indigo-100 to-indigo-200 p-8">
     <!-- Header Section -->
     <header class="mb-8">
-      <h1 class="text-4xl font-extrabold text-charcoal mb-3">Welcome back, {{ userName }}!</h1>
+      <h1 class="text-4xl font-extrabold text-charcoal mb-3">Welcome back, {{ loggedInUser?.name }}!</h1>
       <p class="text-xl text-gray-700">Here's what's happening today. Get ready for a burst of data!</p>
     </header>
 
@@ -131,7 +131,8 @@
 
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref } from 'vue';
+  // import {useCookie} from '#app';
   import {
     UserGroupIcon,
     CalendarIcon,
@@ -144,7 +145,9 @@
     ArrowUpIcon,
     ArrowRightIcon
   } from '@heroicons/vue/24/outline';
-
+  const loggedInUser = useCookie('user');
+  console.log(loggedInUser.value)
+  // user.value = JSON.parse(user.value)
   definePageMeta({
     layout: 'common'
   })

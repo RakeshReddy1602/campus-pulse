@@ -84,12 +84,6 @@
             >
               Forgot Password?
             </NuxtLink>
-            <NuxtLink
-              to="/auth/register"
-              class="text-blue-600 hover:underline transition duration-200"
-            >
-              New Student? Register Here
-            </NuxtLink>
           </div>
         </div>
       </div>
@@ -97,6 +91,14 @@
   </template>
   
   <script setup>
+import { useCookie } from '#app';
+  import { ref } from 'vue';
+  import { useNuxtApp, navigateTo } from '#imports';
+
+  const { $axios } = useNuxtApp();
+  const user = useCookie('user', {});
+  const managedClubs = useCookie('managedClubs',{});
+  const myClubs = useCookie('myClubs', {});
   const formData = ref({
     registrationNumber: '',
     password: ''
@@ -124,32 +126,35 @@
   };
   
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-    
-    try {
-      isLoading.value = true;
-      const res = await $fetch('/api/user/login', {
-      method: 'POST',
-      body: {
-        username: 'admin',
-        password: 'admin'
-      }
+if (!validateForm()) {
+      return;
+    }
+  
+    isLoading.value = true;
+  try {
+    const { data } = await $axios.post('/api/user/login', {
+      regNumber: formData.value.registrationNumber,
+      password: formData.value.password
     });
-
-    if (res.status === 'success') {
-      // responseMessage.value = 'Login successful!';
+  
+    if (data.user) {
+      // user.value = JSON.stringify(data.user);
+      console.log(data.user);
+      user.value = JSON.stringify(data.user.user);
+      // user.value = 'hello world';
+      managedClubs.value = JSON.stringify(data.user.managedClubs);
+      myClubs.value = JSON.stringify(data.user.myClubs);
+            console.log('--- Setting user data ---');
+            console.log(user.value);
       navigateTo('/dashboard');
-      // Handle successful login (e.g., store user data or redirect)
-    } else {
-     alert('Login failed');
     }
-      navigateTo('/dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
+  } catch (error) {
+    console.log(error);
+    alert(error.response?.data?.message || 'Login failed');
+} finally {
       isLoading.value = false;
-    }
-  };
+  }
+};
   </script>
   
   <script>

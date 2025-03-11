@@ -2,22 +2,22 @@
   <section class="py-20 bg-gradient-to-r from-orange-500 via-red-400 to-yellow-600">
     <div class="container mx-auto px-4">
       <div class="grid md:grid-cols-2 gap-12 items-center">
-        <!-- Left side: Image -->
-        <div class="relative">
-          <img 
-            src="../../public/logo.jpg"
-            alt="College Life"
-            class="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500 w-full h-auto"
-          />
-        </div>
-        
-        <!-- Right side: Text content -->
-        <div>
-          <h2 class="text-3xl font-bold text-white mb-6">
-            Why Choose Our Portal?
-          </h2>
-          <p class="text-lg text-white mb-8">
-            Our platform offers a variety of features designed to make your college life easier and more enjoyable. From hackathons to resource sharing, join the community and take part in exciting opportunities.
+      <!-- Left side: Image -->
+      <div class="relative">
+        <img 
+        src="../../public/logo.jpg"
+        alt="College Life"
+        class="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500 w-full h-auto"
+        />
+      </div>
+      
+      <!-- Right side: Text content -->
+      <div>
+        <h2 class="text-3xl font-bold text-white mb-6">
+        Why Choose Our Portal?
+        </h2>
+        <p class="text-lg text-white mb-8">
+        Our platform offers a variety of features designed to make your college life easier and more enjoyable. From hackathons to resource sharing, join the community and take part in exciting opportunities.
           </p>
           <div class="space-y-6">
             <div v-for="(feature, index) in features" :key="index" class="flex items-start space-x-4">

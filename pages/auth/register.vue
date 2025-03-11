@@ -135,6 +135,12 @@
   </template>
   
   <script setup>
+  import { ref } from 'vue';
+  definePageMeta({
+    middleware: 'block-access',
+  });
+  
+  
   const formData = ref({
     fullName: '',
     email: '',

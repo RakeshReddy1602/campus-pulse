@@ -1,51 +1,117 @@
-import { supabase } from '../../supabase.js'; // Using the existing Supabase instance
+import { supabase } from "../../supabase.js";
 
 export default defineEventHandler(async (event) => {
-    try {
-        const { user_id, club_id } = await readBody(event);
+  try {
+    // Extract request body
+    const body = await readBody(event);
+    const { userId, clubId } = body;
 
-        if (!user_id || !club_id) {
-            return { success: false, message: "User ID and Club ID are required" };
-        }
-
-        // Hardcoded pending status ID (3)
-        const pendingStatusId = 3;
-
-        // Check if an entry with the same user_id, club_id, and pending status (3) already exists
-        const { data: existingEntry, error: checkError } = await supabase
-            .from('user_club_mapping')
-            .select('id')
-            .eq('fk_id_user', user_id)
-            .eq('fk_id_club', club_id)
-            .eq('fk_id_status', pendingStatusId)
-            .single();
-
-        if (checkError && checkError.code !== 'PGRST116') { // Ignore "no rows found" error
-            return { success: false, message: "Error checking existing entry", error: checkError };
-        }
-
-        if (existingEntry) {
-            return { success: false, message: "User already has a pending request for this club" };
-        }
-
-        // Insert a new entry with 'pending' status (3)
-        const { error: insertError } = await supabase
-            .from('user_club_mapping')
-            .insert([
-                {
-                    fk_id_user: user_id,
-                    fk_id_club: club_id,
-                    fk_id_status: pendingStatusId
-                }
-            ]);
-
-        if (insertError) {
-            return { success: false, message: "Failed to join club", error: insertError };
-        }
-
-        return { success: true, message: "User successfully joined the club with pending status" };
-
-    } catch (err) {
-        return { success: false, message: "Server error", error: err };
+    if (!userId || !clubId) {
+      setResponseStatus(event, 400);
+      return {
+        statusCode: 400,
+        status: "error",
+        message: "User ID and Club ID are required.",
+      };
     }
+
+    // Check if there is an entry in user_club_mapping table
+    const { data: existingMapping, error: fetchError } = await supabase
+      .from('user_club_mapping')
+      .select('*')
+      .eq('fk_id_user', userId)
+      .eq('fk_id_club', clubId)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+      console.error("Supabase error:", fetchError);
+      setResponseStatus(event, 500);
+      return {
+        statusCode: 500,
+        status: "error",
+        message: "Failed to check existing club membership.",
+        error: fetchError.message,
+      };
+    }
+
+    if (!existingMapping) {
+      // No existing entry, create a new one
+      const { data, error } = await supabase
+        .from('user_club_mapping')
+        .insert([
+          {
+            fk_id_user: userId,
+            fk_id_club: clubId,
+            fk_id_status: 3 // Assuming 3 means "requested to join"
+          }
+        ])
+        .select();
+
+      if (error) {
+        console.error("Supabase error:", error);
+        setResponseStatus(event, 500);
+        return {
+          statusCode: 500,
+          status: "error",
+          message: "Failed to request to join the club.",
+          error: error.message,
+        };
+      }
+
+      setResponseStatus(event, 201);
+      return {
+        statusCode: 201,
+        status: "success",
+        message: "Successfully requested to join the club.",
+        data: data[0],
+      };
+    } else {
+      // Existing entry found, check the status
+      if (existingMapping.fk_id_status === 2) {
+        // Update the status to 3
+        const { data, error } = await supabase
+          .from('user_club_mapping')
+          .update({ fk_id_status: 3 })
+          .eq('fk_id_user', userId)
+          .eq('fk_id_club', clubId)
+          .select();
+
+        if (error) {
+          console.error("Supabase error:", error);
+          setResponseStatus(event, 500);
+          return {
+            statusCode: 500,
+            status: "error",
+            message: "Failed to update club membership status.",
+            error: error.message,
+          };
+        }
+
+        setResponseStatus(event, 200);
+        return {
+          statusCode: 200,
+          status: "success",
+          message: "Successfully requested to join the club.",
+          data: data[0],
+        };
+      } else {
+        // Status is not 2, do nothing
+        setResponseStatus(event, 200);
+        return {
+          statusCode: 200,
+          status: "success",
+          message: "Successfully requested to join the club.",
+        };
+      }
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    setResponseStatus(event, 500);
+    return {
+      statusCode: 500,
+      status: "error",
+      message: "An unexpected error occurred.",
+      error: err.message,
+    };
+  }
 });

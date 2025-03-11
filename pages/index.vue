@@ -57,11 +57,11 @@
   </template>
   
   <script setup>
-    import Hero from './common-pages/hero.vue';
-    import About from './common-pages/about.vue';
-    import Features from './common-pages/features.vue';
-    import Testimonials from './common-pages/testimonal.vue';
-    import Footer from './common-pages/footer.vue';
+    import Hero from '~/components/hero.vue';
+    import About from '~/components/about.vue';
+    import Features from '~/components/features.vue';
+    import Testimonials from '~/components/testimonal.vue';
+    import Footer from '~/components/footer.vue';
 
   </script>
   

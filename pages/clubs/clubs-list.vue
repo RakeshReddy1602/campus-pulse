@@ -42,12 +42,12 @@
               >
                 {{ club?.club_category?.name }}
               </span>
-              <button
+                <button :disabled="club.hasRequestedToJoin"
                 class="px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-teal-500 hover:to-blue-500"
                 @click="joinClub(club.id)"
-              >
-                Join Club
-              </button>
+                >
+                 {{ club.hasRequestedToJoin ? 'Already Requested to Join' : 'Join Club' }}
+                </button>
             </div>
           </div>
         </div>
@@ -56,30 +56,65 @@
   </template>
   
   <script setup>
-  import { ref } from "vue";
-  import { AcademicCapIcon, GlobeAltIcon, PuzzlePieceIcon, MusicalNoteIcon, FingerPrintIcon } from "@heroicons/vue/24/solid";
-
+  import { ref, onMounted } from "vue";
+  import { 
+    AcademicCapIcon, 
+    GlobeAltIcon, 
+    PuzzlePieceIcon, 
+    MusicalNoteIcon, 
+    FingerPrintIcon 
+  } from "@heroicons/vue/24/solid";
+  
   definePageMeta({
     override: true,
     layout: "common",
     title: "Discover New Clubs",
     description: "Explore and connect with communities you're passionate about.",
   });
-
-
   
-  let availableClubs = ref([]);
-
-  const res = await $fetch('/api/clubs/fetch-all-clubs', {
-      method: 'GET'
+  const availableClubs = ref([]);
+  let loggedInUserId =  useCookie('user')?.value?.id;
+  const { $axios } = useNuxtApp(); // Get Axios from Nuxt plugin
+  // Fetch clubs from API
+  const fetchClubs = async () => {
+  try {
+    console.log('loggedInUserId : ',loggedInUserId);
+    const res = await $axios.post("/api/clubs/fetch-all-clubs", {
+      userId: loggedInUserId
     });
-  availableClubs = res.data;
+    console.log('clubs  : ',res);
+    if (res.status === 200) {
+      availableClubs.value = res.data.data;
+    } else {
+      console.error("Failed to fetch clubs:", res.data.message);
+    }
+  } catch (error) {
+    console.error("API Error:", error.response?.data?.message || error.message);
+  }
+};
 
+  // Load clubs on component mount
+  onMounted(fetchClubs);
   
-  const joinClub = (clubId) => {
-    alert(`You have joined the club with ID: ${clubId}!`);
-  };
+    const joinClub = async (clubId) => {
+      try {
+        const res = await $axios.post("/api/clubs/join-club", {
+          clubId: clubId,
+          userId: loggedInUserId
+        });
+        console.log('res : ',res);
+        if (res.status === 201) {
+          fetchClubs();
+          alert("Successfully joined the club!");
+        } else {
+          alert("Failed to join the club: " + res.data.message);
+        }
+      } catch (error) {
+        alert("API Error: " + (error.response?.data?.message || error.message));
+      }
+    };
   </script>
+  
   
   <style>
   .line-clamp-3 {

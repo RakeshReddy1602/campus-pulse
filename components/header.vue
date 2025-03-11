@@ -270,6 +270,7 @@ import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/vue/20/so
 const events = [
   { name: 'My Events', description: 'Get a better understanding of your traffic', href: '/events/my-events', icon: ChartPieIcon },
   { name: 'Create New Event', description: 'Your customers’ data will be safe and secure', href: '/events/create-new', icon: FingerPrintIcon },
+  { name: 'Available Events', description: 'Your customers’ data will be safe and secure', href: '/events/all', icon: FingerPrintIcon },
   // { name: 'Integrations', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
   // { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
 ];
