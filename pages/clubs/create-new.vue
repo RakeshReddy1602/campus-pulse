@@ -65,40 +65,82 @@
             </p>
           </div>
 
+          <!-- Club Banner -->
+          <div>
+            <label for="banner" class="block text-sm font-medium text-green-800 mb-2">Club Banner (JPG, JPEG, PNG, max 5 MB)</label>
+            <input
+              id="banner"
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              @change="handleBannerUpload"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-green-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-500 transition-all duration-200 bg-green-50/30"
+            />
+            <p v-if="bannerError" class="text-red-600 text-sm mt-1">{{ bannerError }}</p>
+            <div v-if="formData.bannerPreview" class="mt-2">
+              <img :src="formData.bannerPreview" alt="Banner Preview" class="w-full h-auto rounded-lg shadow-md" />
+            </div>
+          </div>
+
+          <!-- Club Videos -->
+          <div>
+            <label class="block text-sm font-medium text-green-800 mb-2">Club Introduction Videos (MP4, max 20 MB each, up to 5 videos)</label>
+            <div v-for="(video, index) in formData.videos" :key="index" class="mb-4">
+              <label :for="'video' + index" class="block text-sm font-medium text-green-800 mb-1">Video {{ index + 1 }} (optional)</label>
+              <div class="flex items-center gap-4">
+                <input
+                  :id="'video' + index"
+                  type="file"
+                  accept="video/mp4"
+                  @change="handleVideoUpload($event, index)"
+                  class="w-full px-4 py-3 rounded-lg border border-green-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-500 transition-all duration-200 bg-green-50/30"
+                />
+                <button type="button" @click="removeVideo(index)" class="text-red-600 hover:text-red-800 transition-colors">
+                  Remove
+                </button>
+              </div>
+              <div v-if="formData.videoPreviews[index]" class="mt-2">
+                <video :src="formData.videoPreviews[index]" controls class="w-96 h-96 rounded-lg shadow-lg"></video>
+              </div>
+              <p v-if="videoErrors[index]" class="text-red-600 text-sm mt-1">{{ videoErrors[index] }}</p>
+            </div>
+            <div v-if="formData.videos.length < 5" class="mt-4">
+              <button type="button" @click="addVideo" class="text-blue-600 hover:text-blue-800 transition-colors">
+                + Add Another Video
+              </button>
+            </div>
+          </div>
+
           <!-- Moderators Section -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Primary Moderator -->
             <div>
-              <label for="mod1" class="block text-sm font-medium text-green-800 mb-2">
-                Primary Moderator <span class="text-orange-600">*</span>
-              </label>
+              <label for="firstModeratorId" class="block text-sm font-medium text-green-800 mb-2">Primary Moderator</label>
               <select
-                id="mod1"
+                id="firstModeratorId"
                 v-model="formData.firstModeratorId"
                 required
                 @change="filterModerators"
                 class="w-full px-4 py-3 rounded-lg border border-green-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-500 transition-all duration-200 bg-green-50/30"
               >
-                <option value="" disabled>Select moderator</option>
+                <option value="" disabled>Select a primary moderator</option>
                 <option v-for="user in users" :key="user.id" :value="user.id">
-                  {{ user.registration_number }} - {{ user.name }}
+                  {{ user.name }}
                 </option>
               </select>
             </div>
 
             <!-- Secondary Moderator -->
             <div>
-              <label for="mod2" class="block text-sm font-medium text-green-800 mb-2">
-                Secondary Moderator <span class="text-green-600">(Optional)</span>
-              </label>
+              <label for="secondaryModeratorId" class="block text-sm font-medium text-green-800 mb-2">Secondary Moderator</label>
               <select
-                id="mod2"
+                id="secondaryModeratorId"
                 v-model="formData.secondaryModeratorId"
                 class="w-full px-4 py-3 rounded-lg border border-green-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-500 transition-all duration-200 bg-green-50/30"
               >
-                <option value="">Select moderator (optional)</option>
+                <option value="" disabled>Select a secondary moderator</option>
                 <option v-for="user in secondaryModerators" :key="user.id" :value="user.id">
-                  {{ user.registration_number }} - {{ user.name }}
+                  {{ user.name }}
                 </option>
               </select>
             </div>
@@ -151,7 +193,11 @@ const formData = reactive({
   description: '',
   categoryId: '',
   firstModeratorId: '',
-  secondaryModeratorId: ''
+  secondaryModeratorId: '',
+  banner: null,
+  bannerPreview: null,
+  videos: [],
+  videoPreviews: []
 })
 
 const touched = reactive({
@@ -180,11 +226,72 @@ const isFormValid = computed(() =>
   formData.name.length >= 6 &&
   formData.description.length >= 10 &&
   formData.categoryId &&
+  formData.banner &&
   !moderatorsSame.value
 )
 
 const filterModerators = () => {
   secondaryModerators.value = users.value.filter(user => user.id !== formData.firstModeratorId)
+}
+
+const bannerError = ref(null)
+const videoErrors = ref([])
+
+const handleBannerUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg']
+    if (!allowedTypes.includes(file.type)) {
+      bannerError.value = 'Only PNG, JPG, and JPEG files are allowed.'
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      bannerError.value = 'File size must be less than 5 MB.'
+      return
+    }
+    bannerError.value = null
+    formData.banner = file
+
+    // Create a preview of the banner
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      formData.bannerPreview = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const handleVideoUpload = (event, index) => {
+  const file = event.target.files[0]
+  videoErrors.value[index] = null // Clear existing error message for this index
+  if (file) {
+    if (file.size > 20 * 1024 * 1024) {
+      videoErrors.value[index] = `Video ${index + 1} size must be less than 20 MB.`
+    } else {
+      formData.videos[index] = file
+
+      // Create a preview of the video
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        formData.videoPreviews[index] = e.target.result
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+}
+
+const addVideo = () => {
+  if (formData.videos.length < 5) {
+    formData.videos.push(null)
+    formData.videoPreviews.push(null)
+    videoErrors.value.push(null)
+  }
+}
+
+const removeVideo = (index) => {
+  formData.videos.splice(index, 1)
+  formData.videoPreviews.splice(index, 1)
+  videoErrors.value.splice(index, 1)
 }
 
 const handleSubmit = async () => {
@@ -200,16 +307,28 @@ const handleSubmit = async () => {
     if(!loggedInUserId) {
       alert('Something went wrong. please try logging in again!!');
     }
-    const payload = {
-      name: formData.name,
-      description: formData.description,
-      adminuserId: loggedInUserId,
-      categoryId: formData.categoryId,
-      firstModeratorId: formData.firstModeratorId,
-      secondaryModeratorId: formData.secondaryModeratorId || null
-    }
+
+    const payload = new FormData()
+    payload.append('name', formData.name)
+    payload.append('description', formData.description)
+    payload.append('adminId', loggedInUserId)
+    payload.append('categoryId', formData.categoryId)
+    payload.append('primaryModeratorId', formData.firstModeratorId)
+    payload.append('secondaryModeratorId', formData.secondaryModeratorId || null)
+    payload.append('banner', formData.banner)
+    let videos  =  [];
+    formData.videos.forEach((video) => {
+      if(video) {
+        videos.push(video);
+      }
+    });
+    payload.append('videos[]', videos);
     console.log('--  hitting api');
-    await $axios.post('/api/clubs/create-new', payload)
+    await $axios.post('/api/clubs/create-new', payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     console.log('---received response')
     // Reset form
     Object.assign(formData, {
@@ -217,7 +336,11 @@ const handleSubmit = async () => {
       description: '',
       categoryId: '',
       firstModeratorId: '',
-      secondaryModeratorId: ''
+      secondaryModeratorId: '',
+      banner: null,
+      bannerPreview: null,
+      videos: [],
+      videoPreviews: []
     })
   } catch (error) {
     console.error(error)
@@ -226,5 +349,10 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
-
 </script>
+
+<style scoped>
+body {
+  font-family: 'Inter', sans-serif;
+}
+</style>
